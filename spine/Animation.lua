@@ -1,4 +1,3 @@
-require "spine.middleclass"
 local utils = require "spine.utils"
 
 -- auxiliar functions
@@ -386,3 +385,5 @@ function Animation.AttachmentTimeline:apply(skeleton, time, alpha)
   if attachmentName then attachment = skeleton:getAttachment(self.slotName, attachmentName) end
   skeleton:findSlot(self.slotName):setAttachment(attachment)
 end
+
+return Animation
