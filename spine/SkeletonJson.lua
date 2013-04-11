@@ -8,6 +8,22 @@ local Animation = require "spine.Animation"
 
 -- auxiliar functions
 
+local TIMELINE_SCALE = "scale"
+local TIMELINE_ROTATE = "rotate"
+local TIMELINE_TRANSLATE = "translate"
+local TIMELINE_ATTACHMENT = "attachment"
+local TIMELINE_COLOR = "color"
+
+local function readCurve(timeline, keyframeIndex, valueMap)
+  local curve = valueMap["curve"]
+  if not curve then return end
+  if curve == "stepped" then
+    timeline:setStepped(keyframeIndex)
+  else
+    timeline:setCurve(keyframeIndex, curve[1], curve[2], curve[3], curve[4])
+  end
+end
+
 local function readAttachment(name, map, scale, attachmentLoader)
   name = map["name"] or name
   local attachment
@@ -25,7 +41,7 @@ local function readAttachment(name, map, scale, attachmentLoader)
   return attachment
 end
 
-local function readAnimation(name, map, skeletonData)
+local function readAnimation(name, map, skeletonData, scale)
   local timelines = {}
   local duration = 0
 
@@ -56,7 +72,7 @@ local function readAnimation(name, map, skeletonData)
           timeline = Animation.ScaleTimeline:new()
         else
           timeline = Animation.TranslateTimeline:new()
-          timelineScale = self.scale
+          timelineScale = scale
         end
         timeline.boneIndex = boneIndex
 
@@ -129,25 +145,10 @@ local function readAnimation(name, map, skeletonData)
   table.insert(skeletonData.animations, Animation:new(name, timelines, duration))
 end
 
-local function readCurve(timeline, keyframeIndex, valueMap)
-  local curve = valueMap["curve"]
-  if not curve then return end
-  if curve == "stepped" then
-    timeline:setStepped(keyframeIndex)
-  else
-    timeline:setCurve(keyframeIndex, curve[1], curve[2], curve[3], curve[4])
-  end
-end
-
 
 -- class
 
 local SkeletonJson = class("SkeletonJson")
-SkeletonJson.static.TIMELINE_SCALE = "scale"
-SkeletonJson.static.TIMELINE_ROTATE = "rotate"
-SkeletonJson.static.TIMELINE_TRANSLATE = "translate"
-SkeletonJson.static.TIMELINE_ATTACHMENT = "attachment"
-SkeletonJson.static.TIMELINE_COLOR = "color"
 
 function SkeletonJson:initialize(attachmentLoader)
   if not attachmentLoader then attachmentLoader = AttachmentLoader:new() end
@@ -217,7 +218,7 @@ function SkeletonJson:readSkeletonData(jsonText)
       for slotName, slotMap in pairs(skinMap) do
         local slotIndex = skeletonData:findSlotIndex(slotName)
         for attachmentName, attachmentMap in pairs(slotMap) do
-          local attachment = readAttachment(attachmentName, attachmentMap, self.scale)
+          local attachment = readAttachment(attachmentName, attachmentMap, self.scale, self.attachmentLoader)
           if attachment then
             skin:addAttachment(slotIndex, attachmentName, attachment)
           end
@@ -234,7 +235,7 @@ function SkeletonJson:readSkeletonData(jsonText)
   map = root["animations"]
   if map then
     for animationName, animationMap in pairs(map) do
-      readAnimation(animationName, animationMap, skeletonData)
+      readAnimation(animationName, animationMap, skeletonData, self.scale)
     end
   end
 
