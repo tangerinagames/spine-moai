@@ -149,11 +149,11 @@ SkeletonJson.static.TIMELINE_TRANSLATE = "translate"
 SkeletonJson.static.TIMELINE_ATTACHMENT = "attachment"
 SkeletonJson.static.TIMELINE_COLOR = "color"
 
-function SkeletonJson:initializer(attachmentLoader)
+function SkeletonJson:initialize(attachmentLoader)
   if not attachmentLoader then attachmentLoader = AttachmentLoader:new() end
 
   self.attachmentLoader = attachmentLoader
-  self.scale = 1
+  self.scale = 1  
 end
 
 function SkeletonJson:readSkeletonDataFile(fileName, base)
@@ -163,7 +163,7 @@ end
 
 function SkeletonJson:readSkeletonData(jsonText)
   local skeletonData = SkeletonData:new(self.attachmentLoader)
-
+  
   local root = MOAIJsonParser.decode(jsonText)
   if not root then error("Invalid JSON: " .. jsonText, 2) end
 

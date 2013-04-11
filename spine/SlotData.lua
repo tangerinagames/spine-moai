@@ -10,7 +10,7 @@ function SlotData:initialize(name, boneData)
   self:setColor(255, 255, 255, 255)
 end
 
-function self:setColor(r, g, b, a)
+function SlotData:setColor(r, g, b, a)
   self.r = r
   self.g = g
   self.b = b

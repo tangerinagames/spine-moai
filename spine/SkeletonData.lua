@@ -20,7 +20,7 @@ end
 
 local SkeletonData = class("SkeletonData")
 
-function SkeletonData:initializer(attachmentLoader)
+function SkeletonData:initialize(attachmentLoader)
   if not attachmentLoader then error("attachmentLoader cannot be nil", 2) end
 
   self.attachmentLoader = attachmentLoader
