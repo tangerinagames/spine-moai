@@ -113,7 +113,6 @@ local function readAnimation(name, map, skeletonData)
           for i, valueMap in ipairs(values) do
             local time = valueMap["time"]
             local attachmentName = valueMap["name"]
-            if attachmentName == json.null then attachmentName = nil end
             timeline:setKeyframe(keyframeIndex, time, attachmentName)
             keyframeIndex = keyframeIndex + 1
           end
@@ -165,7 +164,7 @@ end
 function SkeletonJson:readSkeletonData(jsonText)
   local skeletonData = SkeletonData:new(self.attachmentLoader)
 
-  local root = json.decode(jsonText)
+  local root = MOAIJsonParser.decode(jsonText)
   if not root then error("Invalid JSON: " .. jsonText, 2) end
 
   -- Bones.
@@ -217,7 +216,7 @@ function SkeletonJson:readSkeletonData(jsonText)
       local skin = Skin:new(skinName)
       for slotName, slotMap in pairs(skinMap) do
         local slotIndex = skeletonData:findSlotIndex(slotName)
-        for attachmentName,attachmentMap in pairs(slotMap) do
+        for attachmentName, attachmentMap in pairs(slotMap) do
           local attachment = readAttachment(attachmentName, attachmentMap, self.scale)
           if attachment then
             skin:addAttachment(slotIndex, attachmentName, attachment)
