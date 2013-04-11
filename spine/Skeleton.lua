@@ -3,6 +3,29 @@ local Bone = require "spine.Bone"
 local Slot = require "spine.Slot"
 local AttachmentLoader = require "spine.AttachmentLoader"
 
+-- auxiliar functions
+
+local function getAttachmentTransform(self, slot, attachment)
+  local x = slot.bone.worldX + attachment.x * slot.bone.m00 + attachment.y * slot.bone.m01
+  local y = -(slot.bone.worldY + attachment.x * slot.bone.m10 + attachment.y * slot.bone.m11)
+  local rotation = slot.bone.worldRotation + attachment.rotation
+  local xScale = slot.bone.worldScaleX + attachment.scaleX - 1
+  local yScale = slot.bone.worldScaleY + attachment.scaleY - 1
+  local propX, propY = self.prop:getLoc()
+  if self.flipX then
+    xScale = -xScale
+    rotation = -rotation
+  end
+  if self.flipY then
+    yScale = -yScale
+    rotation = -rotation
+  end
+  return x + propX, y + propY, -rotation, xScale, yScale
+end
+
+
+--class
+
 local Skeleton = class("Skeleton")
 
 function Skeleton:initialize(skeletonData)
@@ -12,6 +35,8 @@ function Skeleton:initialize(skeletonData)
   self.bones = {}
   self.slots = {}
   self.drawOrder = {}
+  self.images = {}
+  self.prop = MOAIProp2D.new()
 
   for i, boneData in ipairs(skeletonData.bones) do
     local parent
@@ -35,7 +60,23 @@ function Skeleton:updateWorldTransform()
   for i, slot in ipairs(self.drawOrder) do
     local attachment = slot.attachment
     if attachment then
-      -- TODO: implement image loading
+      local image = self.images[attachment]
+      if not image then
+        image = self.data.attachmentLoader:createImage(attachment)
+        if image then
+          image:setPriority(i)          
+        else
+          print("Error creating image: " .. attachment.name)
+          image = AttachmentLoader.failed
+        end
+        self.images[attachment] = image
+      end
+      if image ~= AttachmentLoader.failed then
+        local x, y, rotation, xScale, yScale = getAttachmentTransform(self, slot, attachment)
+        image:setLoc(x, y)
+        image:setRot(rotation)
+        image:setScl(xScale, yScale)
+      end
     end
   end
 
