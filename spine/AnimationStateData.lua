@@ -23,23 +23,26 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ------------------------------------------------------------------------------
 
-require "spine.middleclass"
+local AnimationStateData = class("AnimationStateData")
 
-local spine = {}
+function AnimationStateData:initialize(skeletonData)
+  if not skeletonData then error("skeletonData cannot be nil", 2) end
 
-spine.utils = require "spine.utils"
-spine.SkeletonJson = require "spine.SkeletonJson"
-spine.SkeletonData = require "spine.SkeletonData"
-spine.BoneData = require "spine.BoneData"
-spine.SlotData = require "spine.SlotData"
-spine.Skin = require "spine.Skin"
-spine.RegionAttachment = require "spine.RegionAttachment"
-spine.Skeleton = require "spine.Skeleton"
-spine.Bone = require "spine.Bone"
-spine.Slot = require "spine.Slot"
-spine.AttachmentLoader = require "spine.AttachmentLoader"
-spine.Animation = require "spine.Animation"
-spine.AnimationState = require "spine.AnimationState"
-spine.AnimationStateData = require "spine.AnimationStateData"
+  self.skeletonData = skeletonData
+  self.animationToMixTime = {}
+end
 
-return spine
+function AnimationStateData:setMix(fromName, toName, duration)
+  local from = self.skeletonData:findAnimation(fromName);
+  if not from then error("Animation not found: " + fromName, 2) end
+  local to = self.skeletonData:findAnimation(toName);
+  if not to then error("Animation not found: " + fromName, 2) end
+
+  self.animationToMixTime[fromName .. "|" .. toName] = duration
+end
+
+function AnimationStateData:getMix(fromName, toName)
+  return self.animationToMixTime[fromName .. "|" .. toName] or 0
+end
+
+return AnimationStateData

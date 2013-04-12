@@ -60,7 +60,6 @@ local json = spine.SkeletonJson:new(loader)
 json.scale = 0.7
 
 local skeletonData = json:readSkeletonDataFile("data/spineboy/spineboy.json")
-local walkAnimation = skeletonData:findAnimation("walk")
 
 local skeleton = spine.Skeleton:new(skeletonData)
 skeleton.prop:setLoc(240, 300)
@@ -70,15 +69,32 @@ skeleton.debugBones = true
 skeleton.debugLayer = layer
 skeleton:setToBindPose()
 
+local animationStateData = spine.AnimationStateData:new(skeletonData)
+animationStateData:setMix("walk", "jump", 0.2)
+animationStateData:setMix("jump", "walk", 0.2)
+ 
+local animationState = spine.AnimationState:new(animationStateData)
+animationState:setAnimation("walk", true)
+ 
 
 local animationTime = 0
 MOAIThread.new():run(function()
   while true do
-    animationTime = animationTime + MOAISim.getStep()
-  
-    walkAnimation:apply(skeleton, animationTime, true)
+    animationState:update(MOAISim.getStep())
+    animationState:apply(skeleton)
+    
     skeleton:updateWorldTransform()
     
+    if animationState.current.name == "jump" and animationState.currentTime > animationState.current.duration then
+      animationState:setAnimation("walk", true)
+    end
+    
     coroutine.yield()
+  end
+end)
+
+MOAIInputMgr.device.mouseLeft:setCallback(function(down)
+  if down and animationState.current.name ~= "jump" then
+    animationState:setAnimation("jump")
   end
 end)
