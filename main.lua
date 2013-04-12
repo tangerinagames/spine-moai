@@ -77,7 +77,6 @@ local animationState = spine.AnimationState:new(animationStateData)
 animationState:setAnimation("walk", true)
  
 
-local animationTime = 0
 MOAIThread.new():run(function()
   while true do
     animationState:update(MOAISim.getStep())
