@@ -176,7 +176,7 @@ function Skeleton:setSkin(skinName)
     if not newSkin then error("Skin not found: " .. skinName, 2) end
     if self.skin then
       -- Attach all attachments from the new skin if the corresponding attachment from the old skin is currently attached.
-      for k, v in self.skin.attachments do
+      for k, v in pairs(self.skin.attachments) do
         local attachment = v[3]
         local slotIndex = v[1]
         local slot = self.slots[slotIndex]
@@ -196,11 +196,11 @@ function Skeleton:getAttachment(slotName, attachmentName)
   if not attachmentName then error("attachmentName cannot be nil.", 2) end
   local slotIndex = self.data:findSlotIndex(slotName)
   if slotIndex == -1 then error("Slot not found: " .. slotName, 2) end
-  if self.skin then return self.skin:getAttachment(slotIndex, attachmentName) end
   if self.data.defaultSkin then
     local attachment = self.data.defaultSkin:getAttachment(slotIndex, attachmentName)
     if attachment then return attachment end
   end
+  if self.skin then return self.skin:getAttachment(slotIndex, attachmentName) end
   return nil
 end
 

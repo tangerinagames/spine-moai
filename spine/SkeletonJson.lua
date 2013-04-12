@@ -154,6 +154,7 @@ local function readAnimation(name, map, skeletonData, scale)
           for i, valueMap in ipairs(values) do
             local time = valueMap["time"]
             local attachmentName = valueMap["name"]
+            if type(attachmentName) ~= "string" then attachmentName = nil end
             timeline:setKeyframe(keyframeIndex, time, attachmentName)
             keyframeIndex = keyframeIndex + 1
           end

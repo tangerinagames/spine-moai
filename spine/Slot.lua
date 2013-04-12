@@ -48,7 +48,7 @@ end
 
 function Slot:setAttachment(attachment)
   if self.attachment and self.attachment ~= attachment and self.skeleton.images[self.attachment] then
-    -- TODO: remove old attachment
+    self.skeleton.images[self.attachment]:remove()
     self.skeleton.images[self.attachment] = nil
   end
   self.attachment = attachment
