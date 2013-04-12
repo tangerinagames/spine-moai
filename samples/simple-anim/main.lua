@@ -22,6 +22,7 @@
 -- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ------------------------------------------------------------------------------
+package.path =  package.path .. ";../../?.lua"
 
 local spine = require "spine.spine"
 
@@ -43,7 +44,7 @@ local loader = spine.AttachmentLoader:new()
 function loader:createImage(attachment)
 
   local deck = MOAIGfxQuad2D.new()
-  deck:setTexture("data/spineboy/" .. attachment.name .. ".png")
+  deck:setTexture("../../data/spineboy/" .. attachment.name .. ".png")
   deck:setUVRect(0, 0, 1, 1)
   deck:setRect(0, 0, attachment.width, attachment.height)
   
@@ -59,41 +60,26 @@ end
 local json = spine.SkeletonJson:new(loader)
 json.scale = 0.7
 
-local skeletonData = json:readSkeletonDataFile("data/spineboy/spineboy.json")
+local skeletonData = json:readSkeletonDataFile("../../data/spineboy/spineboy.json")
+local walkAnimation = skeletonData:findAnimation("walk")
 
 local skeleton = spine.Skeleton:new(skeletonData)
 skeleton.prop:setLoc(240, 300)
-skeleton.flipX = true
+skeleton.flipX = false
 skeleton.flipY = false
 skeleton.debugBones = true
 skeleton.debugLayer = layer
 skeleton:setToBindPose()
 
-local animationStateData = spine.AnimationStateData:new(skeletonData)
-animationStateData:setMix("walk", "jump", 0.2)
-animationStateData:setMix("jump", "walk", 0.2)
- 
-local animationState = spine.AnimationState:new(animationStateData)
-animationState:setAnimation("walk", true)
- 
 
+local animationTime = 0
 MOAIThread.new():run(function()
   while true do
-    animationState:update(MOAISim.getStep())
-    animationState:apply(skeleton)
-    
+    animationTime = animationTime + MOAISim.getStep()
+  
+    walkAnimation:apply(skeleton, animationTime, true)
     skeleton:updateWorldTransform()
     
-    if animationState.current.name == "jump" and animationState.currentTime > animationState.current.duration then
-      animationState:setAnimation("walk", true)
-    end
-    
     coroutine.yield()
-  end
-end)
-
-MOAIInputMgr.device.mouseLeft:setCallback(function(down)
-  if down and animationState.current.name ~= "jump" then
-    animationState:setAnimation("jump")
   end
 end)
