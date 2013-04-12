@@ -27,6 +27,7 @@ local utils = require "spine.utils"
 local Bone = require "spine.Bone"
 local Slot = require "spine.Slot"
 local AttachmentLoader = require "spine.AttachmentLoader"
+local Graphics = require "spine.Graphics"
 
 -- auxiliar functions
 
@@ -105,8 +106,37 @@ function Skeleton:updateWorldTransform()
     end
   end
 
-  if self.debug then
-    -- TODO: implement debug lines
+  if self.debugBones then
+    local propX, propY = self.prop:getLoc()
+    for i, bone in ipairs(self.bones) do
+      if not bone.line then
+        bone.line = Graphics:new(bone.data.length, 1, self.debugLayer)
+        bone.line:setPenColor(1, 0, 0):drawLine(0, 0, bone.data.length, 1)
+      end
+
+      local x, y = bone.worldX + propX, -bone.worldY + propY
+      local rotation = bone.worldRotation
+      local yScale, xScale = 1, 1
+
+      if self.flipX then
+        xScale = -1
+        rotation = -rotation
+      end
+      if self.flipY then
+        yScale = -1
+        rotation = -rotation
+      end
+
+      bone.line.prop:setScl(xScale, yScale)
+      bone.line.prop:setLoc(x, y)
+      bone.line.prop:setRot(-rotation)
+
+      if not bone.circle then
+        bone.circle = Graphics:new(6, 6, self.debugLayer)
+        bone.circle:setPenColor(0, 1, 0):fillCircle()
+      end
+      bone.circle.prop:setLoc(x - 3, y - 3)
+    end
   end
 end
 

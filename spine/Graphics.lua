@@ -23,62 +23,61 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ------------------------------------------------------------------------------
 
-local spine = require "spine.spine"
+-- inspired in Hanappe Graphics class
+-- https://github.com/makotok/Hanappe/blob/master/projects/hanappe-framework/src/hp/display/Graphics.lua
 
-local width, height = 480, 320
+local Graphics = class("Graphics")
+Graphics.static.DEFAULT_STEPS = 32
 
-MOAISim.openWindow("MOAI and Spine", width, height)
+function Graphics:initialize(width, height, layer)
+  self.width = width
+  self.height = height
+  self.commands = {}
 
-local viewport = MOAIViewport.new()
-viewport:setSize(width, height)
-viewport:setScale(width, -height)
-viewport:setOffset(-1, 1)
+  local scriptDeck = MOAIScriptDeck.new()
+  scriptDeck:setRect(0, 0, width, height)
+  scriptDeck:setDrawCallback(function()
+    if #self.commands == 0 then
+      return
+    end            
+    
+    MOAIGfxDevice.setPenColor(1, 1, 1, 1)
+    MOAIGfxDevice.setPenWidth(1)
+    MOAIGfxDevice.setPointSize(1)
 
-local layer = MOAILayer2D.new()
-layer:setViewport(viewport)
-MOAISim.pushRenderPass(layer)
+    for _, command in ipairs(self.commands) do command(self) end
+  end)
 
-
-local loader = spine.AttachmentLoader:new()
-function loader:createImage(attachment)
-
-  local deck = MOAIGfxQuad2D.new()
-  deck:setTexture("data/spineboy/" .. attachment.name .. ".png")
-  deck:setUVRect(0, 0, 1, 1)
-  deck:setRect(0, 0, attachment.width, attachment.height)
-  
-  local prop = MOAIProp2D.new()
-  prop:setDeck(deck)  
-  prop:setPiv(attachment.width / 2, attachment.height / 2)
-  layer:insertProp(prop)
-
-  return prop
+  self.prop = MOAIProp2D.new()  
+  self.prop:setDeck(scriptDeck)
+  layer:insertProp(self.prop)
 end
 
-
-local json = spine.SkeletonJson:new(loader)
-json.scale = 0.7
-
-local skeletonData = json:readSkeletonDataFile("data/spineboy/spineboy.json")
-local walkAnimation = skeletonData:findAnimation("walk")
-
-local skeleton = spine.Skeleton:new(skeletonData)
-skeleton.prop:setLoc(240, 300)
-skeleton.flipX = true
-skeleton.flipY = false
-skeleton.debugBones = true
-skeleton.debugLayer = layer
-skeleton:setToBindPose()
-
-
-local animationTime = 0
-MOAIThread.new():run(function()
-  while true do
-    animationTime = animationTime + MOAISim.getStep()
-  
-    walkAnimation:apply(skeleton, animationTime, true)
-    skeleton:updateWorldTransform()
-    
-    coroutine.yield()
+function Graphics:setPenColor(r, g, b, a)
+  a = a or 1
+  local command = function(self)
+    MOAIGfxDevice.setPenColor(r, g, b, a)
   end
-end)
+  table.insert(self.commands, command)
+  return self
+end
+
+function Graphics:drawLine(...)
+  local args = {...}
+  local command = function(self)
+    MOAIDraw.drawLine(unpack(args))
+  end
+  table.insert(self.commands, command)
+  return self
+end
+
+function Graphics:fillCircle()
+  local command = function(self)
+    local r = math.min(self.width, self.height) / 2
+    MOAIDraw.fillCircle(r, r, r, Graphics.DEFAULT_STEPS)
+  end
+  table.insert(self.commands, command)
+  return self
+end
+
+return Graphics
