@@ -373,7 +373,7 @@ function Animation.ColorTimeline:apply(skeleton, time, alpha)
 end
 
 
-Animation.AttachmentTimeline = class("Animation.ColorTimeline", Animation.CurveTimeline)
+Animation.AttachmentTimeline = class("Animation.AttachmentTimeline", Animation.CurveTimeline)
 function Animation.AttachmentTimeline:initialize()
   Animation.CurveTimeline.initialize(self)
   self.frames = {}
