@@ -100,7 +100,7 @@ function Skeleton:updateWorldTransform()
       if image ~= AttachmentLoader.failed then
         local x, y, rotation, xScale, yScale = getAttachmentTransform(self, slot, attachment)
         image:setLoc(x, y)
-        image:setRot(rotation)
+        image:setRot(0, 0, rotation)
         image:setScl(xScale, yScale)
       end
     end

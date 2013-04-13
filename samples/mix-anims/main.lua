@@ -48,7 +48,7 @@ function loader:createImage(attachment)
   deck:setUVRect(0, 0, 1, 1)
   deck:setRect(0, 0, attachment.width, attachment.height)
   
-  local prop = MOAIProp2D.new()
+  local prop = MOAIProp.new()
   prop:setDeck(deck)  
   prop:setPiv(attachment.width / 2, attachment.height / 2)
   layer:insertProp(prop)
