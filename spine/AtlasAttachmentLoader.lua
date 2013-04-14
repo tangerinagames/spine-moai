@@ -23,25 +23,55 @@
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ------------------------------------------------------------------------------
 
-require "spine.middleclass"
+local AttachmentLoader = require "spine.AttachmentLoader"
 
-local spine = {}
+local AtlasAttachmentLoader = class("AtlasAttachmentLoader", AttachmentLoader)
 
-spine.utils = require "spine.utils"
-spine.SkeletonJson = require "spine.SkeletonJson"
-spine.SkeletonData = require "spine.SkeletonData"
-spine.BoneData = require "spine.BoneData"
-spine.SlotData = require "spine.SlotData"
-spine.Skin = require "spine.Skin"
-spine.RegionAttachment = require "spine.RegionAttachment"
-spine.Skeleton = require "spine.Skeleton"
-spine.Bone = require "spine.Bone"
-spine.Slot = require "spine.Slot"
-spine.AttachmentLoader = require "spine.AttachmentLoader"
-spine.AtlasAttachmentLoader = require "spine.AtlasAttachmentLoader"
-spine.Atlas = require "spine.Atlas"
-spine.Animation = require "spine.Animation"
-spine.AnimationState = require "spine.AnimationState"
-spine.AnimationStateData = require "spine.AnimationStateData"
+function AtlasAttachmentLoader:initialize(atlas, textureName, layer)
+  AttachmentLoader.initialize(self)
+  self.atlas = atlas
+  self.layer = layer
+  self.names = {}
 
-return spine
+  local texture = MOAITexture.new()
+  texture:load(textureName)
+  texture:setFilter(self.atlas.page.minFilter, self.atlas.page.maxFilter)
+  
+  local width, height = texture:getSize()
+
+  self.deck = MOAIGfxQuadDeck2D.new()
+  self.deck:setTexture(texture)
+  self.deck:reserve(#self.atlas.regions)
+
+  for index, region in ipairs(self.atlas.regions) do
+    local uv = {}
+    uv.u0 = region.x / width
+    uv.v0 = region.y / height
+    uv.u1 = (region.x + region.width) / width
+    uv.v1 = (region.y + region.height) / height
+
+    self.deck:setUVRect(index, uv.u0, uv.v0, uv.u1, uv.v1)
+
+    self.names[region.name] = index
+  end
+end
+
+function AtlasAttachmentLoader:createImage(attachment)
+  local layer = self.layer
+  local index = self.names[attachment.name]
+  local region = self.atlas:findRegion(attachment.name)
+
+  self.deck:setRect(index, 0, 0, attachment.width, attachment.height)
+  
+  local prop = MOAIProp.new()
+  prop:setDeck(self.deck)
+  prop:setIndex(index)
+  prop:setPiv(attachment.width / 2, attachment.height / 2)
+  
+  function prop:remove() layer:removeProp(self) end
+
+  layer:insertProp(prop)
+  return prop
+end
+
+return AtlasAttachmentLoader

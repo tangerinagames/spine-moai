@@ -25,7 +25,7 @@
 
 local utils = {}
 
-utils.readFile = function (fileName, base)
+function utils.readFile(fileName, base)
   if not base then base = MOAIFileSystem.getWorkingDirectory(); end
   local path = base .. fileName
   local file = io.open(path, "r")
@@ -35,7 +35,7 @@ utils.readFile = function (fileName, base)
   return contents
 end
 
-function tablePrint (tt, indent, done)
+function tablePrint(tt, indent, done)
   done = done or {}
   indent = indent or 0
   if type(tt) == "table" then
@@ -44,7 +44,7 @@ function tablePrint (tt, indent, done)
       table.insert(sb, string.rep (" ", indent)) -- indent it
       if type (value) == "table" and not done [value] then
         done [value] = true
-        table.insert(sb, "{\n");
+        table.insert(sb, key .. " = {\n");
         table.insert(sb, tablePrint (value, indent + 2, done))
         table.insert(sb, string.rep (" ", indent)) -- indent it
         table.insert(sb, "}\n");
@@ -61,7 +61,7 @@ function tablePrint (tt, indent, done)
   end
 end
 
-function utils.print (value)
+function utils.print(value)
   if "nil" == type(value) then
     print(tostring(nil))
   elseif "table" == type(value) then
@@ -73,11 +73,40 @@ function utils.print (value)
   end
 end
 
-function utils.indexOf (haystack, needle)
+function utils.indexOf(haystack, needle)
   for i,value in ipairs(haystack) do
     if value == needle then return i end
   end
   return nil
+end
+
+function utils.split(str, pat)
+   local t = {}  -- NOTE: use {n = 0} in Lua-5.0
+   local fpat = "(.-)" .. pat
+   local last_end = 1
+   local s, e, cap = str:find(fpat, 1)
+   while s do
+      if s ~= 1 or cap ~= "" then
+   table.insert(t,cap)
+      end
+      last_end = e+1
+      s, e, cap = str:find(fpat, last_end)
+   end
+   if last_end <= #str then
+      cap = str:sub(last_end)
+      table.insert(t, cap)
+   end
+   return t
+end
+
+function utils.length(haystack)
+  local count = 0
+  for _ in pairs(haystack) do count = count + 1 end
+  return count
+end
+
+function utils.trim(text)
+  return text:gsub("^%s*(.-)%s*$", "%1")
 end
 
 return utils

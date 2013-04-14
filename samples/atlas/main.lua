@@ -22,26 +22,46 @@
 -- (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 -- SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ------------------------------------------------------------------------------
+package.path =  package.path .. ";../../?.lua"
 
-require "spine.middleclass"
+local spine = require "spine.spine"
 
-local spine = {}
+local width, height = 480, 320
 
-spine.utils = require "spine.utils"
-spine.SkeletonJson = require "spine.SkeletonJson"
-spine.SkeletonData = require "spine.SkeletonData"
-spine.BoneData = require "spine.BoneData"
-spine.SlotData = require "spine.SlotData"
-spine.Skin = require "spine.Skin"
-spine.RegionAttachment = require "spine.RegionAttachment"
-spine.Skeleton = require "spine.Skeleton"
-spine.Bone = require "spine.Bone"
-spine.Slot = require "spine.Slot"
-spine.AttachmentLoader = require "spine.AttachmentLoader"
-spine.AtlasAttachmentLoader = require "spine.AtlasAttachmentLoader"
-spine.Atlas = require "spine.Atlas"
-spine.Animation = require "spine.Animation"
-spine.AnimationState = require "spine.AnimationState"
-spine.AnimationStateData = require "spine.AnimationStateData"
+MOAISim.openWindow("MOAI and Spine", width, height)
 
-return spine
+local viewport = MOAIViewport.new()
+viewport:setSize(width, height)
+viewport:setScale(width, -height)
+viewport:setOffset(-1, 1)
+
+local layer = MOAILayer2D.new()
+layer:setViewport(viewport)
+MOAISim.pushRenderPass(layer)
+
+local atlas = spine.Atlas:new("data/goblins.atlas")
+local loader = spine.AtlasAttachmentLoader:new(atlas, "data/goblins.png", layer)
+local json = spine.SkeletonJson:new(loader)
+json.scale = 0.7
+
+local skeletonData = json:readSkeletonDataFile("../../data/goblins/goblins.json")
+local walkAnimation = skeletonData:findAnimation("walk")
+
+local skeleton = spine.Skeleton:new(skeletonData)
+skeleton.prop:setLoc(240, 300)
+skeleton.flipX = true
+skeleton:setSkin("goblingirl")
+skeleton:setToBindPose()
+
+
+local animationTime = 0
+MOAIThread.new():run(function()
+  while true do
+    animationTime = animationTime + MOAISim.getStep()
+  
+    walkAnimation:apply(skeleton, animationTime, true)
+    skeleton:updateWorldTransform()
+    
+    coroutine.yield()
+  end
+end)
