@@ -68,8 +68,6 @@ function AtlasAttachmentLoader:createImage(attachment)
   prop:setIndex(index)
   prop:setPiv(attachment.width / 2, attachment.height / 2)
   
-  function prop:remove() layer:removeProp(self) end
-
   layer:insertProp(prop)
   return prop
 end
