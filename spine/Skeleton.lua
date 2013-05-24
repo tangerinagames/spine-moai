@@ -97,6 +97,8 @@ function Skeleton:updateWorldTransform()
         end
         self.images[attachment] = image
       end
+      
+      image:setVisible(true)
       if image ~= AttachmentLoader.failed then
         local x, y, rotation, xScale, yScale = getAttachmentTransform(self, slot, attachment)
         image:setLoc(x, y)
