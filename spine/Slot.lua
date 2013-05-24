@@ -48,8 +48,7 @@ end
 
 function Slot:setAttachment(attachment)
   if self.attachment and self.attachment ~= attachment and self.skeleton.images[self.attachment] then
-    self.skeleton.images[self.attachment]:remove()
-    self.skeleton.images[self.attachment] = nil
+    self.skeleton.images[self.attachment]:setVisible(false)
   end
   self.attachment = attachment
   self.attachmentTime = self.skeleton.time
