@@ -40,28 +40,18 @@ layer:setViewport(viewport)
 MOAISim.pushRenderPass(layer)
 
 
-local cache = {}
 local loader = spine.AttachmentLoader:new()
 function loader:createImage(attachment)
-  local prop = cache[attachment.name]
-
-  if not prop then
-    local deck = MOAIGfxQuad2D.new()
-    deck:setTexture("../../data/goblins/" .. attachment.name .. ".png")
-    deck:setUVRect(0, 0, 1, 1)
-    deck:setRect(0, 0, attachment.width, attachment.height)
-    
-    prop = MOAIProp.new()
-    prop:setDeck(deck)  
-    prop:setPiv(attachment.width / 2, attachment.height / 2)
-
-    function prop:remove()
-      layer:removeProp(self)
-    end
-    cache[attachment.name] = prop
-  end
+  local deck = MOAIGfxQuad2D.new()
+  deck:setTexture("../../data/goblins/" .. attachment.name .. ".png")
+  deck:setUVRect(0, 0, 1, 1)
+  deck:setRect(0, 0, attachment.width, attachment.height)
   
+  local prop = MOAIProp.new()
+  prop:setDeck(deck)  
+  prop:setPiv(attachment.width / 2, attachment.height / 2)
   layer:insertProp(prop)
+  
   return prop
 end
 

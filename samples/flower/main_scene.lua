@@ -28,20 +28,13 @@ function onCreate()
   layer = flower.Layer()
   layer:setScene(scene)
 
-  local cache = {}
   local loader = spine.AttachmentLoader:new()
   function loader:createImage(attachment)
-    local image = cache[attachment.name]
-    if not image then
-      local texture = "../../data/dragon/" .. attachment.name .. ".png"
+    local texture = "../../data/dragon/" .. attachment.name .. ".png"
+    
+    local image = flower.Image(texture, attachment.width, attachment.height)
+    image:setLayer(layer)
       
-      image = flower.Image(texture, attachment.width, attachment.height)
-      image:setLayer(layer)
-      
-      function image:remove() image:setVisible(false) end
-      cache[attachment.name] = image
-    end
-    image:setVisible(true)
     return image
   end
   
